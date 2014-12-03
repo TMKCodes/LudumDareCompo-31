@@ -1,4 +1,4 @@
 LudumDareCompo-31
 =================
 
-This is public repository for our Ludum Dare Jam 31 entry.
+This is public repository for my Ludum Dare Compo 31 entry.
