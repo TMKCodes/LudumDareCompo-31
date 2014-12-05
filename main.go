@@ -12,6 +12,10 @@ func init() {
 	runtime.LockOSThread();
 }
 
+type bullet struct {
+	bulletSprite *sf.RectangleShape
+	direction float64
+}
 
 func getAngle(a sf.Vector2f, b sf.Vector2f) float64 {
 	delta := sf.Vector2f{b.X - a.X, b.Y - a.Y};
@@ -20,21 +24,20 @@ func getAngle(a sf.Vector2f, b sf.Vector2f) float64 {
 
 func main() {
 	ticker := time.NewTicker(time.Second / time.Duration(60)); // 60 ticks per second
+	lastShot := time.Now();
+	gravity := float32(5);
+	shootingRate := time.Second / time.Duration(10); // 30 times per second
 	window := sf.NewRenderWindow(sf.VideoMode{1920, 1080, 32}, "LD31 preparation", sf.StyleDefault, sf.DefaultContextSettings());
+	window.SetVSyncEnabled(true);
 	snowmanSprite, err := sf.NewRectangleShape();
 	if err != nil {
 		return;
 	}
-	snowmanSprite.SetSize(sf.Vector2f{10, 10});
+	snowmanSprite.SetSize(sf.Vector2f{100, 100});
 	snowmanSprite.SetPosition(sf.Vector2f{0, 250});
 	snowmanSprite.SetFillColor(sf.Color{128,128,128,255});
-	extraSprite, err := sf.NewRectangleShape();
-	if err != nil {
-		return;
-	}
-	extraSprite.SetSize(sf.Vector2f{10, 10});
-	extraSprite.SetPosition(sf.Vector2f{1000, 300});
-	extraSprite.SetFillColor(sf.Color{0,0,0,255});
+
+	bullets := make([]*bullet, 0);
 	for window.IsOpen() {
 		<-ticker.C
 		for event := window.PollEvent(); event != nil; event = window.PollEvent() {
@@ -48,29 +51,53 @@ func main() {
 			}
 		}
 
-		angle := getAngle(extraSprite.GetPosition(), snowmanSprite.GetPosition());
-		if sf.KeyboardIsKeyPressed(sf.KeyUp) == true {
-			snowmanSprite.Move(sf.Vector2f{0, -15});
+		if sf.KeyboardIsKeyPressed(sf.KeyW) == true {
+			snowmanSprite.Move(sf.Vector2f{0, -10});
 		}
-		if sf.KeyboardIsKeyPressed(sf.KeyDown) == true {
-			snowmanSprite.Move(sf.Vector2f{0, 15});
+		if sf.KeyboardIsKeyPressed(sf.KeyS) == true {
+			snowmanSprite.Move(sf.Vector2f{0, 10});
 		}
-		if sf.KeyboardIsKeyPressed(sf.KeyLeft) == true {
-			snowmanSprite.Move(sf.Vector2f{-15, 0});
+		if sf.KeyboardIsKeyPressed(sf.KeyA) == true {
+			snowmanSprite.Move(sf.Vector2f{-10, 0});
 		}
-		if sf.KeyboardIsKeyPressed(sf.KeyRight) == true {
-			snowmanSprite.Move(sf.Vector2f{15, 0});
+		if sf.KeyboardIsKeyPressed(sf.KeyD) == true {
+			snowmanSprite.Move(sf.Vector2f{10, 0});
 		}
-		if sf.KeyboardIsKeyPressed(sf.KeySpace) == true {
-			snowmanSprite.Move(sf.Vector2f{float32(math.Cos(angle) * 15), float32(math.Sin(angle) * 15)});
+		if sf.IsMouseButtonPressed(sf.MouseLeft) == true {
+			if (lastShot.Add(shootingRate)).UnixNano() < time.Now().UnixNano() {
+				lastShot = time.Now();
+				newBullet := new(bullet);
+				newBullet.bulletSprite, _ = sf.NewRectangleShape();
+				newBullet.bulletSprite.SetSize(sf.Vector2f{5, 5});
+				snowmanPosition := snowmanSprite.GetPosition();
+				snowmanSize := snowmanSprite.GetSize();
+				newBulletPosition := sf.Vector2f{snowmanPosition.X + (snowmanSize.X / 2), snowmanPosition.Y + (snowmanSize.Y / 2)};
+				newBullet.bulletSprite.SetPosition(newBulletPosition);
+				newBullet.bulletSprite.SetFillColor(sf.Color{0, 0, 0, 255});
+				mousePosition := window.MapPixelToCoords(sf.MouseGetPosition(window), window.GetDefaultView());
+				newBullet.direction = getAngle(newBulletPosition, sf.Vector2f{float32(mousePosition.X), float32(mousePosition.Y)});
+				if len(bullets) < 100 {
+					bullets = append(bullets, newBullet);
+				} else {
+					bullets = append(bullets[1:100], newBullet);
+				}
+			}
+		}
+		fmt.Printf("len(bullets) = %v\n", len(bullets));
+		for i := 0; i < len(bullets); i++ {
+			x := float32(math.Cos(bullets[i].direction)) * 20;
+			y := float32(math.Sin(bullets[i].direction)) * (20 - gravity);
+			bullets[i].bulletSprite.Move(sf.Vector2f{x, y});
 		}
 
-
-		position := snowmanSprite.GetPosition();
-		fmt.Printf("Angle: %v\n", angle);
-		fmt.Printf("Snowman Position: %v\n", position);
+		snowmanPosition := snowmanSprite.GetPosition();
+		if snowmanPosition.Y+gravity < 800 {
+			snowmanSprite.Move(sf.Vector2f{0, gravity});
+		}
 		window.Clear(sf.Color{255,255,255,0});
-		window.Draw(extraSprite, sf.DefaultRenderStates());
+		for i := 0; i < len(bullets); i++ {
+			window.Draw(bullets[i].bulletSprite, sf.DefaultRenderStates());
+		}
 		window.Draw(snowmanSprite, sf.DefaultRenderStates());
 		window.Display();
 	}
