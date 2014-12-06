@@ -86,7 +86,7 @@ func main() {
 		fmt.Printf("len(bullets) = %v\n", len(bullets));
 		for i := 0; i < len(bullets); i++ {
 			x := float32(math.Cos(bullets[i].direction)) * 20;
-			y := float32(math.Sin(bullets[i].direction)) * (20 - gravity);
+			y := float32(math.Sin(bullets[i].direction)) * 20;
 			bullets[i].bulletSprite.Move(sf.Vector2f{x, y});
 		}
 
