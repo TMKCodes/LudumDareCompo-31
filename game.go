@@ -103,13 +103,11 @@ func NewGame(title string, width uint, height uint, bpp uint, vsync bool) *game 
 
 func (this *game) ChangeGearUp() {
 	this.Gear += 1;
-	fmt.Printf("Gear changed up to %v\n", this.Gear);
 	this.InitGear();
 }
 
 func (this *game) ChangeGearDown() {
 	this.Gear -= 1;
-	fmt.Printf("Gear changed down to %v\n", this.Gear);
 	this.InitGear();
 }
 
@@ -126,7 +124,6 @@ func (this *game) InitGear() {
 		l.Exists = true;
 		this.LevelZero = l;
 	} else if this.Gear == 1 { // the playable gear.
-		fmt.Printf("Initializing gear 1\n");
 		var l levelone;
 		lForegroundSprite, err := sf.NewRectangleShape();
 		if err != nil {
@@ -175,7 +172,6 @@ func (this *game) InitGear() {
 		this.Points = 0;
 		this.SnowmanPoints = 0;
 		this.Speed = 4000000000;
-		fmt.Printf("Initialized gear 1\n");
 	} else if this.Gear == 2 {
 		var l leveltwo;
 		text, _ := sf.NewText(this.Font);
@@ -223,7 +219,6 @@ func (this *game) Update() {
 				}
 				sb.Sprite = sbSprite;
 				sb.Location = this.RenderWindow.MapPixelToCoords(sf.MouseGetPosition(this.RenderWindow), this.RenderWindow.GetDefaultView());
-				fmt.Printf("Mouse Location: %#s\n", sb.Location);
 				sb.Sprite.SetSize(sf.Vector2f{float32(600), float32(600)});
 				sb.Sprite.SetPosition(sf.Vector2f{float32(sb.Location.X-300), float32(sb.Location.Y-300)});
 				sbTexture, err := sf.NewTextureFromFile("snowball.png", nil);
@@ -233,7 +228,6 @@ func (this *game) Update() {
 				sb.Sprite.SetTexture(sbTexture, false);
 				sb.Exists = true;
 				this.Snowball = sb;
-				fmt.Printf("Snowball thrown!\n");
 			}
 		}
 		if this.Snowball.Exists == true {
@@ -257,12 +251,9 @@ func (this *game) Update() {
 					sPos := this.Snowman.Sprite.GetPosition();
 					this.Snowman.Sprite.Move(sf.Vector2f{0, sSize.Y});
 					this.Snowman.Up = false;
-					fmt.Printf("Snowman shot!\n");
 					// add points to the player!
 					points := 500 + rand.Intn(1000 - 500);
-					fmt.Printf("Points received = %v\n", points);
 					this.Points += points;
-					fmt.Printf("Total points = %v\n", this.Points);
 					this.Speed -= int64(float64(this.Speed) * 0.05);
 
 					this.Snowball.Exists = false;
@@ -295,7 +286,6 @@ func (this *game) Update() {
 				if this.SnowmanPoints > 5500 {
 					// SNOWMAN WON THE GAME YOU FUCKING LOSER!
 					this.ChangeGearUp();
-					fmt.Printf("SNOWMAN WON THE GAME YOU FUCKING LOSER!\n");
 					this.Snowman.Exists = false;
 				}
 			}
@@ -320,7 +310,6 @@ func (this *game) Update() {
 				}
 				sb.Sprite = sbSprite;
 				sb.Location = this.RenderWindow.MapPixelToCoords(sf.MouseGetPosition(this.RenderWindow), this.RenderWindow.GetDefaultView());
-				fmt.Printf("Mouse Location: %#s\n", sb.Location);
 				sb.Sprite.SetSize(sf.Vector2f{float32(50), float32(50)});
 				snowmanPosition := this.Snowman.Sprite.GetPosition();
 				sb.Sprite.SetPosition(sf.Vector2f{snowmanPosition.X, snowmanPosition.Y});
@@ -331,16 +320,12 @@ func (this *game) Update() {
 				sb.Sprite.SetTexture(sbTexture, false);
 				sb.Exists = true;
 				this.SnowmanBall = sb;
-				fmt.Printf("SnowmanBall thrown!\n");
 				sSize := this.Snowman.Sprite.GetSize();
 				this.Snowman.Sprite.Move(sf.Vector2f{0, sSize.Y});
 				this.Snowman.Up = false;
-				fmt.Printf("Drop snowman\n");
 			} else {
-				fmt.Printf("Raise snowman\n");
 				// Change the snowman position.
 				random := 1 + rand.Intn(8 - 1);
-				fmt.Printf("Snowman random location: %v\n", random);
 				switch random {
 					case 1:
 						this.Snowman.Sprite.SetPosition(sf.Vector2f{112.03, 711.39+50});
